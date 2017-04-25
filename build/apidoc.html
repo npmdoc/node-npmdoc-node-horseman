@@ -49,6 +49,8 @@
 <h1>api documentation for
     <a
 
+        href="https://github.com/johntitus/node-horseman#readme"
+
     >node-horseman (v3.3.0)</a>
 </h1>
 <h4>Run PhantomJS from Node</h4>
@@ -3542,7 +3544,23 @@ return this
     <li>description and source-code<pre class="apidocCodePre">all = function (promises) {
     return new PromiseArray(promises).promise();
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+				.then(function() {
+					var defaultSize = Promise.fromCallback(function(done) {
+						return fs.stat(&#x27;default.pdf&#x27;, done);
+					}).get(&#x27;size&#x27;);
+					var euroSize = Promise.fromCallback(function(done) {
+						return fs.stat(&#x27;euro.pdf&#x27;, done);
+					}).get(&#x27;size&#x27;);
+					return Promise.<span class="apidocCodeKeywordSpan">all</span>([
+						defaultSize.should.eventually.be.greaterThan(0),
+						euroSize.should.eventually.be.greaterThan(0)
+					]);
+				});
+		});
+
+		//File upload is broken in Phantomjs 2.0
+...</pre></li>
     </ul>
 
 
@@ -3819,21 +3837,21 @@ horseman
               ._then(promiseAllThis, undefined, undefined, promises, undefined);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-					.fromCallback(function(done) {
-						return self.phantom.clearCookies(done);
-					})
-					.tap(function() {
-						debug(&#x27;.cookies() reset&#x27;);
-					})
-					.return(arg)
-					.<span class="apidocCodeKeywordSpan">each</span>(function(cookie) {
-						return HorsemanPromise.fromCallback(function(done) {
-							self.phantom.addCookie(cookie, done);
-						});
-					});
-			}
-			switch (typeof arg) {
-				// adding one cookie
+
+var links = [];
+
+function getLinks(){
+	return horseman.evaluate( function(){
+		// This code is executed in the browser.
+		var links = [];
+		$(&#x22;div.g h3.r a&#x22;).<span class="apidocCodeKeywordSpan">each</span>(function( item ){
+			var link = {
+				title : $(this).text(),
+				url : $(this).attr(&#x22;href&#x22;)
+			};
+			links.push(link);
+		});
+		return links;
 ...</pre></li>
     </ul>
 
@@ -4234,7 +4252,23 @@ gl/MqrFmX\u000a&#x22;);
         async.disableTrampolineIfNecessary();
     }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+				})
+				.then(function configBluebird() {
+					return HorsemanPromise.fromCallback(function(done) {
+						return page.evaluate(
+							function configBluebird(noConflict, debug) {
+								if (debug) {
+									// TODO: Turn on warnings in bluebird 3
+									Promise.<span class="apidocCodeKeywordSpan">longStackTraces</span>();
+								}
+								if (noConflict) {
+									window.Bluebird = Promise.noConflict();
+								}
+							},
+							inject === &#x27;bluebird&#x27;,
+							self.options.bluebirdDebug,
+...</pre></li>
     </ul>
 
 
@@ -4249,7 +4283,23 @@ gl/MqrFmX\u000a&#x22;);
     <li>description and source-code<pre class="apidocCodePre">map = function (promises, fn, options, _filter) {
     return map(promises, fn, options, _filter);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+			var files = [
+				&#x27;out.png&#x27;,
+				&#x27;small.png&#x27;,
+				&#x27;big.png&#x27;,
+				&#x27;default.pdf&#x27;,
+				&#x27;euro.pdf&#x27;
+			];
+			return Promise.<span class="apidocCodeKeywordSpan">map</span>(files, function(file) {
+				return Promise
+					.fromCallback(function(done) {
+						return fs.stat(file, done);
+					})
+					.call(&#x27;isFile&#x27;)
+					.catch(function() {})
+					.then(function(isFile) {
+...</pre></li>
     </ul>
 
 
@@ -4564,7 +4614,23 @@ horseman
     ret._rejectCallback(reason, true);
     return ret;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+					&#x27;ignore-ssl-errors&#x27;: false
+				}
+			});
+			return horseman
+				.open(&#x27;https://expired.badssl.com&#x27;)
+				.close()
+				.should
+				.be.<span class="apidocCodeKeywordSpan">rejected</span>();
+		});
+
+		it(&#x27;should set the viewport&#x27;, function() {
+			var horseman = new Horseman({
+				timeout: defaultTimeout,
+				injectJquery: bool
+			});
+...</pre></li>
     </ul>
 
 
@@ -4586,7 +4652,23 @@ horseman
     }
     return ret;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+								&#x27;Promise already exists on page&#x27;);
+						return;
+					}
+
+					var bbLoc = &#x27;bluebird/js/browser/bluebird&#x27; +
+							(self.options.bluebirdDebug ? &#x27;&#x27; : &#x27;.min&#x27;) + &#x27;.js&#x27;;
+					return HorsemanPromise.fromCallback(function(done) {
+						return page.injectJs(require.<span class="apidocCodeKeywordSpan">resolve</span>(bbLoc), done);
+					})
+					.tap(function(successful) {
+						if (!successful) {
+							var err = new Error(&#x27;bluebird injection failed&#x27;);
+							return HorsemanPromise.reject(err);
+						}
+						debug(&#x27;injected bluebird&#x27;);
+...</pre></li>
     </ul>
 
 
@@ -4635,7 +4717,23 @@ horseman
     <li>description and source-code<pre class="apidocCodePre">some = function (promises, howMany) {
     return some(promises, howMany);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+				timeout: defaultTimeout,
+				proxy: &#x27;localhost:&#x27; + PROXY_PORT,
+				proxyType: &#x27;http&#x27;,
+			});
+			var hadHeader = false;
+			return horseman
+				.on(&#x27;resourceReceived&#x27;, function(resp) {
+					var hasHeader = resp.headers.<span class="apidocCodeKeywordSpan">some</span>(function(header) {
+						return header.name === PROXY_HEADER;
+					});
+					hadHeader = hadHeader || hasHeader;
+				})
+				.open(&#x27;http://www.google.com&#x27;)
+				.close()
+				.then(function() {
+...</pre></li>
     </ul>
 
 
@@ -4692,7 +4790,23 @@ horseman
     ret._resolveFromSyncValue(value);
     return ret;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+ */
+Horseman.prototype.pageMaker = function(url, _page) {
+	var self = this;
+	url = url || &#x27;about:blank&#x27;;
+
+	// .try runs synchronously
+	var loaded;
+	return HorsemanPromise.<span class="apidocCodeKeywordSpan">try</span>(function getPage() {
+			var page;
+			if (_page) {
+				var p = setupPage(_page);
+				loaded = _page.loadedPromise();
+				return p;
+			} else {
+				return HorsemanPromise.fromCallback(function(done) {
+...</pre></li>
     </ul>
 
 
@@ -6553,7 +6667,23 @@ exports.viewport = function(width, height) {
     }
     return new PromiseArray(this).promise();
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+				.then(function() {
+					var defaultSize = Promise.fromCallback(function(done) {
+						return fs.stat(&#x27;default.pdf&#x27;, done);
+					}).get(&#x27;size&#x27;);
+					var euroSize = Promise.fromCallback(function(done) {
+						return fs.stat(&#x27;euro.pdf&#x27;, done);
+					}).get(&#x27;size&#x27;);
+					return Promise.<span class="apidocCodeKeywordSpan">all</span>([
+						defaultSize.should.eventually.be.greaterThan(0),
+						euroSize.should.eventually.be.greaterThan(0)
+					]);
+				});
+		});
+
+		//File upload is broken in Phantomjs 2.0
+...</pre></li>
     </ul>
 
 
@@ -6596,7 +6726,23 @@ exports.viewport = function(width, height) {
     }
     return this;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+				var p = setupPage(_page);
+				loaded = _page.loadedPromise();
+				return p;
+			} else {
+				return HorsemanPromise.fromCallback(function(done) {
+						return self.phantom.createPage(function(err, page) {
+							if (page) {
+								var p = setupPage(page).<span class="apidocCodeKeywordSpan">asCallback</span>(done);
+								loaded = page.loadedPromise();
+								return p;
+							}
+							return done(err, page);
+						});
+					})
+					.tap(function openPage(page) {
+...</pre></li>
     </ul>
 
 
@@ -6616,21 +6762,21 @@ exports.viewport = function(width, height) {
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-```js
-horseman
-  .on(&#x27;consoleMessage&#x27;, function( msg ){
-    console.log(msg);
-  })
-```
+- .switchToChildFrame() action is deprecated
+  since PhantomJS deprecated it
 
-#### .<span class="apidocCodeKeywordSpan">at</span>(event, callback)
-
-Respond to page events with the callback.
-Be sure to set these before calling `.open()`.
-The `callback` is evaluated in PhantomJS.
-If you do not need to return from `callback`, you probably want `.on` instead.
-
-Useful events are:
+## 3.0.0-beta1 - 2016-03-22
+### Added
+- bluebird 3 functions are now chainable with Horseman actions
+- Support for callback/Promises in .evaluate() functions
+- .<span class="apidocCodeKeywordSpan">at</span>() action allows registering callbacks to run in PhantomJS JavaScript
+  environment (see Reame for details)
+- .setProxy() action allows changing Phantom&#x27;s proxy settings
+  (requires PhantomJS 2.0.0 or newer)
+- .includeJs() action allows injecting JavaScript from a URL
+- .put() action
+- Support for SlimerJS as well as PhantomJS - thanks @w33ble
+- Support for PhantomJS remote debugger - thanks @dustinblackman
 ...</pre></li>
     </ul>
 
@@ -6810,21 +6956,20 @@ Go forward to the next page.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-				return HorsemanPromise.fromCallback(function(done) {
-					return self.page.set(&#x27;clipRect&#x27;, prevClipRect, done);
-				});
-			});
-	}
-	if (typeof area === &#x27;string&#x27;) {
-		return this
-			.<span class="apidocCodeKeywordSpan">boundingRectangle</span>(area)
-			.then(doCrop);
-	} else {
-		return doCrop(area);
-	}
-};
+## 3.3.0 - 2017-04-06
+### Added
+- `phantomOptions` option for passing arbitrary PhantomJS CLI options -
+  thanks @fabiocorneti
+- Support for per-action timeouts on `.waitFor` type actions - thanks @piercus
 
-/**
+### Fixed
+- `.<span class="apidocCodeKeywordSpan">boundingRectangle</span>()` sometimes not using jQuery when it could -
+  thanks @robsgreen
+- `.evaluate()` sometimes failing due to an utilized internal variable -
+  thanks @robertpallas
+
+### Changed
+- Removed `clientScripts` option (it had no effect anyways)
 ...</pre></li>
     </ul>
 
@@ -7171,21 +7316,21 @@ horseman
 		});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-  .open(&#x27;http://www.google.com&#x27;)
-  .type(&#x27;input[name=&#x22;q&#x22;]&#x27;, &#x27;github&#x27;)
-  .click(&#x27;[name=&#x22;btnK&#x22;]&#x27;)
-  .keyboardEvent(&#x27;keypress&#x27;, 16777221)
-  .waitForSelector(&#x27;div.g&#x27;)
-  .count(&#x27;div.g&#x27;)
-  .log() // prints out the number of results
-  .<span class="apidocCodeKeywordSpan">close</span>();
-```
+## 2.7.0 - 2015-10-15
+### Updated
+- Makes promise functions (like then, catch, tap) chainable with the rest of
+  Horseman actions. Merges #57. Thanks @awlayton!
 
-Save the file as `google.js`. Then, `node google.js`.
+## 2.6.0 - 2015-10-08
+### Updated
+- .<span class="apidocCodeKeywordSpan">close</span>() is now chainable. Updated readme with examples.
 
-### Count Twitter Followers Concurrently
+## 2.5.0 - 2015-10-08
+### Added
+- .log(). Closes #54.
 
-```js
+### Fixed
+- .viewport() wasn&#x27;t returning the actual viewport size.
 ...</pre></li>
     </ul>
 
@@ -7207,19 +7352,20 @@ Save the file as `google.js`. Then, `node google.js`.
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
 
-Returns the number of tabs currently open.
+## 3.0.0 - 2016-04-06
+### Added
+- Support for adding custom actions via `Horseman.registerAction`
 
-#### .switchToTab(tabnumber)
-
-Switch to another tab. Count starts at 0.
-
-#### .<span class="apidocCodeKeywordSpan">closeTab</span>(tabNum)
-
-Close an open tab. Count starts at 0.
-
-### Events
-
-#### .on(event, callback)
+## 3.0.0-beta2 - 2016-04-05
+### Added
+- .<span class="apidocCodeKeywordSpan">closeTab</span>() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+  (by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
 ...</pre></li>
     </ul>
 
@@ -7240,21 +7386,21 @@ Close an open tab. Count starts at 0.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+## 1.5.4 - 2015-07-22
+### Fixed
+- Merges #36 - Setting via horseman.value( newVal ) now fires a change event.
+  Thanks @fpinzn.
 
-The HTTP status code returned for the page just opened.
+## 1.5.3 - 2015-07-13
+### Fixed
+- Fix #27 &#x26; 33 - .<span class="apidocCodeKeywordSpan">cookies</span>() wasn&#x27;t returning a list of cookies for the current
+  page. Now fixed.
 
-#### .reload()
+## 1.5.2 - 2015-07-01
+### Fixed
+- Fix #30 - crop() now chainable. Thanks @jackstrain.
 
-Refresh the current page.
-
-#### .<span class="apidocCodeKeywordSpan">cookies</span>(\[object|array of objects|string\])
-
-Without any options,
-this function will return all the cookies inside the browser.
-
-```js
-horseman
-.open(&#x27;http://httpbin.org/cookies&#x27;)
+## 1.5.1 - 2015-03-10
 ...</pre></li>
     </ul>
 
@@ -7310,21 +7456,21 @@ Save the file as `google.js`. Then, `node google.js`.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-Useful for debugging.
+- Waiting actions now reject on timeout (timeout callback is still called too)
+- Phantom&#x27;s reourceTimeout now set to match Horseman&#x27;s timeout
+- Horseman will use Phantom from the phantomjs-prebuilt/phantomjs npm packages
+  if installed (still overridden by phantomPath option)
 
-#### .screenshotBase64(type)
+### Fixed
+- .open() now rejects on fail - thanks @w33ble.
+- .<span class="apidocCodeKeywordSpan">crop</span>() now works with zoomFactor other than 1 - thanks @wong2.
+- .waitForSelector() now uses JQuery for selectors (when avialable)
+- navigationRequested callback now called with correct parameters -
+  thanks @grahamkennery.
+- Tabs/pages not opened by Horseman (e.g. by a link)
+  are now correctly added to Horseman&#x27;s list of tabs
 
-Returns a base64 encoded string representing the screenshot.
-Type must be one of &#x27;PNG&#x27;, &#x27;GIF&#x27;, or &#x27;JPEG&#x27;.
-
-#### .<span class="apidocCodeKeywordSpan">crop</span>(area, path)
-
-[getBoundingClientRect]: https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-Takes a cropped screenshot of the page.
-`area` can be a string identifying an html element on the screen to crop to,
-or a [getBoundingClientRect][] object.
-
-#### .cropBase64(area, type)
+### Updated
 ...</pre></li>
     </ul>
 
@@ -7345,21 +7491,21 @@ or a [getBoundingClientRect][] object.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-#### .crop(area, path)
+### Fixed
+- .upload() now works in PhantomJS 1.x line (still broken in 2.x line) -
+  thanks @flashhhh
+- logging for falsy arguments - thanks @awlayton
 
-[getBoundingClientRect]: https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-Takes a cropped screenshot of the page.
-`area` can be a string identifying an html element on the screen to crop to,
-or a [getBoundingClientRect][] object.
+## 2.8.0 - 2015-10-28
+### Added
+- .<span class="apidocCodeKeywordSpan">cropBase64</span>(). Thanks @jeprojects!
 
-#### .<span class="apidocCodeKeywordSpan">cropBase64</span>(area, type)
+### Updated
+- node-phantom-simple dependency to version 2.1.0.
+- Updated readme with examples on how to set header/footer contents.
 
-Returns a string representing a cropped, base64 encoded screenshot of the page.
-`area` can be a string identifying an html element on the screen to crop to,
-or a [getBoundingClientRect][] object.
-Type must be one of &#x27;PNG&#x27;, &#x27;GIF&#x27;, or &#x27;JPEG&#x27;.
-
-#### .pdf(path, \[paperSize\])
+## 2.7.1 - 2015-10-21
+### Fixed
 ...</pre></li>
     </ul>
 
@@ -7463,21 +7609,21 @@ horseman
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-.count(&#x27;a&#x27;)
-.log() // outputs the number of anchor tags
-.click(&#x27;a&#x27;)
-.log(&#x27;clicked the button&#x27;) //outputs the string
-.close();
-```
+- .log(). Closes #54.
 
-#### .<span class="apidocCodeKeywordSpan">do</span>(fn)
+### Fixed
+- .viewport() wasn&#x27;t returning the actual viewport size.
 
-Run an function without breaking the chain. Works with asynchronous functions.
-Must call the callback when complete.
+## 2.4.0 - 2015-10-08
+### Added
+- .<span class="apidocCodeKeywordSpan">do</span>(). Closes #53.
 
-```js
-horseman
-.open(&#x27;http://www.google.com&#x27;)
+## 2.3.0 - 2015-10-01
+### Added
+- Support for multiple tabs. Closes #49.
+- .status(). Returns the HTTP status code from the last opened page.
+
+## 2.2.1 - 2015-10-01
 ...</pre></li>
     </ul>
 
@@ -7515,20 +7661,21 @@ horseman
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-(`&#x27;keypress&#x27;`, `&#x27;keyup&#x27;`, `&#x27;keydown&#x27;`. Default is `&#x27;keypress&#x27;`)
-and `modifiers`, which is a string in the form of `ctrl+shift+alt`.
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .<span class="apidocCodeKeywordSpan">download</span>() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-#### .upload(selector, path)
+### Changed
+- .log() now preserves resolution value of previous action
+- More output added to verbose debugging
 
-Specify the `path` to upload into a file input `selector` element.
-
-#### .<span class="apidocCodeKeywordSpan">download</span>(url, \[path\], \[binary\])
-
-Download the contents of `url`.
-If `path` is supplied the contents will be written there,
-otherwise this gets the contents.
-If `binary` is `true` it gets the contents as a node `Buffer`,
-otherwise it gets them as a string (`binary` defaults to `false`).
+### Fixed
 ...</pre></li>
     </ul>
 
@@ -7546,21 +7693,21 @@ otherwise it gets them as a string (`binary` defaults to `false`).
               ._then(promiseAllThis, undefined, undefined, this, undefined);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-					.fromCallback(function(done) {
-						return self.phantom.clearCookies(done);
-					})
-					.tap(function() {
-						debug(&#x27;.cookies() reset&#x27;);
-					})
-					.return(arg)
-					.<span class="apidocCodeKeywordSpan">each</span>(function(cookie) {
-						return HorsemanPromise.fromCallback(function(done) {
-							self.phantom.addCookie(cookie, done);
-						});
-					});
-			}
-			switch (typeof arg) {
-				// adding one cookie
+
+var links = [];
+
+function getLinks(){
+	return horseman.evaluate( function(){
+		// This code is executed in the browser.
+		var links = [];
+		$(&#x22;div.g h3.r a&#x22;).<span class="apidocCodeKeywordSpan">each</span>(function( item ){
+			var link = {
+				title : $(this).text(),
+				url : $(this).attr(&#x22;href&#x22;)
+			};
+			links.push(link);
+		});
+		return links;
 ...</pre></li>
     </ul>
 
@@ -7596,21 +7743,21 @@ otherwise it gets them as a string (`binary` defaults to `false`).
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-.open(&#x27;http://www.google.com&#x27;)
-.do(function(done){
-  setTimeout(done,1000);
-})
-.close();
-```
+- `phantomOptions` option for passing arbitrary PhantomJS CLI options -
+  thanks @fabiocorneti
+- Support for per-action timeouts on `.waitFor` type actions - thanks @piercus
 
-#### .<span class="apidocCodeKeywordSpan">evaluate</span>(fn, \[arg1, arg2,...\])
+### Fixed
+- `.boundingRectangle()` sometimes not using jQuery when it could -
+  thanks @robsgreen
+- `.<span class="apidocCodeKeywordSpan">evaluate</span>()` sometimes failing due to an utilized internal variable -
+  thanks @robertpallas
 
-Invokes `fn` on the page with args. On completion it returns a value.
-Useful for extracting information from the page.
+### Changed
+- Removed `clientScripts` option (it had no effect anyways)
 
-```js
-horseman
-.open(&#x27;http://en.wikipedia.org/wiki/Headless_Horseman&#x27;)
+## 3.2.0 - 2016-10-21
+### Added
 ...</pre></li>
     </ul>
 
@@ -7678,7 +7825,19 @@ Counts the number of `selector` on the page. Returns a number.
                              finallyHandler,
                              finallyHandler);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+	var horseman = new Horseman();
+	horseman
+		.open(&#x27;http://mobile.twitter.com/&#x27; + user)
+		.text(&#x27;.UserProfileHeader-stat--followers .UserProfileHeader-statCount&#x27;)
+		.then(function(text){
+			console.log( user + &#x27;: &#x27; + text );			
+		})
+		.<span class="apidocCodeKeywordSpan">finally</span>(function(){
+			return horseman.close();
+		});	
+});
+...</pre></li>
     </ul>
 
 
@@ -7733,19 +7892,20 @@ The HTTP status code returned for the page just opened.
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
 
-### Frames
-
-#### .frameName()
-
-Get the name of the current frame.
-
-#### .<span class="apidocCodeKeywordSpan">frameCount</span>()
-
-Get the number of frames inside the current frame.
-
-#### .frameNames()
-
-Get the names of the frames inside the current frame.
+## 3.0.0-beta2 - 2016-04-05
+### Added
+- .closeTab() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+(by .closeTab() or something else)
+- .frameName() action
+- .<span class="apidocCodeKeywordSpan">frameCount</span>() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+(even works for binary files is using PhantomJS 2 or newer)
 ...</pre></li>
     </ul>
 
@@ -7766,20 +7926,21 @@ Get the names of the frames inside the current frame.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-`fn` : function to execute, mandatory
-`args` : `fn` arguments
-`value` : Wait until the `fn` evaluated on the page returns the *specified* `value`.
-`timeout` : specific timeout
+- Support for adding custom actions via `Horseman.registerAction`
 
-### Frames
-
-#### .<span class="apidocCodeKeywordSpan">frameName</span>()
-
-Get the name of the current frame.
-
-#### .frameCount()
-
-Get the number of frames inside the current frame.
+## 3.0.0-beta2 - 2016-04-05
+### Added
+- .closeTab() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+  (by .closeTab() or something else)
+- .<span class="apidocCodeKeywordSpan">frameName</span>() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
 ...</pre></li>
     </ul>
 
@@ -7800,20 +7961,20 @@ Get the number of frames inside the current frame.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-
-Get the name of the current frame.
-
-#### .frameCount()
-
-Get the number of frames inside the current frame.
-
-#### .<span class="apidocCodeKeywordSpan">frameNames</span>()
-
-Get the names of the frames inside the current frame.
-
-#### .switchToFocusedFrame()
-
-Switch to the frame that is in focus.
+## 3.0.0-beta2 - 2016-04-05
+### Added
+- .closeTab() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+(by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .<span class="apidocCodeKeywordSpan">frameNames</span>() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+(even works for binary files is using PhantomJS 2 or newer)
 ...</pre></li>
     </ul>
 
@@ -7981,21 +8142,21 @@ horseman
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-***Please note: binary downloads do not work correctly with PhantomJS 1.x***
-
-
-#### .injectJs(file)
-
-Inject a JavaScript file onto the page.
-
-#### .<span class="apidocCodeKeywordSpan">includeJs</span>(url)
-
-Include an external JavaScript script on the page via URL.
-
-#### .mouseEvent(type, \[x, y, \[button\]\])
-
-Send a mouse event to the page.
-Each event is sent to the page as if it comes from real user interaction.
+### Added
+- bluebird 3 functions are now chainable with Horseman actions
+- Support for callback/Promises in .evaluate() functions
+- .at() action allows registering callbacks to run in PhantomJS JavaScript
+  environment (see Reame for details)
+- .setProxy() action allows changing Phantom&#x27;s proxy settings
+  (requires PhantomJS 2.0.0 or newer)
+- .<span class="apidocCodeKeywordSpan">includeJs</span>() action allows injecting JavaScript from a URL
+- .put() action
+- Support for SlimerJS as well as PhantomJS - thanks @w33ble
+- Support for PhantomJS remote debugger - thanks @dustinblackman
+- Support for reading cookies.txt files
+- Options for injecting bluebird into each page for using Promises in browser
+- Option for automatically switching to newly opened tabs
+- Option for more verbose debug
 ...</pre></li>
     </ul>
 
@@ -8016,20 +8177,21 @@ Each event is sent to the page as if it comes from real user interaction.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-otherwise this gets the contents.
-If `binary` is `true` it gets the contents as a node `Buffer`,
-otherwise it gets them as a string (`binary` defaults to `false`).
+- .plainText() action - thanks @mzhangARS
 
-***Please note: binary downloads do not work correctly with PhantomJS 1.x***
+### Changed
+- Removed `port` constructor option (it no longer had any effect)
 
+## 3.0.1 - 2016-04-12
+### Fixed
+- .<span class="apidocCodeKeywordSpan">injectJs</span>() now properly rejects when it fails
+- #158 - bug with `injectBluebird` option
 
-#### .<span class="apidocCodeKeywordSpan">injectJs</span>(file)
+## 3.0.0 - 2016-04-06
+### Added
+- Support for adding custom actions via `Horseman.registerAction`
 
-Inject a JavaScript file onto the page.
-
-#### .includeJs(url)
-
-Include an external JavaScript script on the page via URL.
+## 3.0.0-beta2 - 2016-04-05
 ...</pre></li>
     </ul>
 
@@ -8193,20 +8355,20 @@ Save the file as `google.js`. Then, `node google.js`.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-  .userAgent(&#x27;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0&#x27;)
-  .open(&#x27;http://www.google.com&#x27;)
-  .type(&#x27;input[name=&#x22;q&#x22;]&#x27;, &#x27;github&#x27;)
-  .click(&#x27;[name=&#x22;btnK&#x22;]&#x27;)
-  .keyboardEvent(&#x27;keypress&#x27;, 16777221)
-  .waitForSelector(&#x27;div.g&#x27;)
-  .count(&#x27;div.g&#x27;)
-  .<span class="apidocCodeKeywordSpan">log</span>() // prints out the number of results
-  .close();
-```
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-Save the file as `google.js`. Then, `node google.js`.
+### Changed
+- .<span class="apidocCodeKeywordSpan">log</span>() now preserves resolution value of previous action
+- More output added to verbose debugging
 
-### Count Twitter Followers Concurrently
+### Fixed
+- More readable stack traces from .evaluate() rejections
+  (especially with long stack traces on)
+- Occasional bug with returning undefined in .evaluate() function
 ...</pre></li>
     </ul>
 
@@ -8241,7 +8403,23 @@ Save the file as `google.js`. Then, `node google.js`.
     <li>description and source-code<pre class="apidocCodePre">map = function (fn, options) {
     return map(this, fn, options, null);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+			var files = [
+				&#x27;out.png&#x27;,
+				&#x27;small.png&#x27;,
+				&#x27;big.png&#x27;,
+				&#x27;default.pdf&#x27;,
+				&#x27;euro.pdf&#x27;
+			];
+			return Promise.<span class="apidocCodeKeywordSpan">map</span>(files, function(file) {
+				return Promise
+					.fromCallback(function(done) {
+						return fs.stat(file, done);
+					})
+					.call(&#x27;isFile&#x27;)
+					.catch(function() {})
+					.then(function(isFile) {
+...</pre></li>
     </ul>
 
 
@@ -8374,21 +8552,20 @@ Supported events are:
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+- Horseman Promises now reject on error
+- Waiting actions now reject on timeout (timeout callback is still called too)
+- Phantom&#x27;s reourceTimeout now set to match Horseman&#x27;s timeout
+- Horseman will use Phantom from the phantomjs-prebuilt/phantomjs npm packages
+if installed (still overridden by phantomPath option)
 
-```js
-var Horseman = require(&#x27;node-horseman&#x27;);
-var horseman = new Horseman();
-
-horseman
-.userAgent(&#x27;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0&#x27;)
-.<span class="apidocCodeKeywordSpan">open</span>(&#x27;http://www.google.com&#x27;)
-.type(&#x27;input[name=&#x22;q&#x22;]&#x27;, &#x27;github&#x27;)
-.click(&#x27;[name=&#x22;btnK&#x22;]&#x27;)
-.keyboardEvent(&#x27;keypress&#x27;, 16777221)
-.waitForSelector(&#x27;div.g&#x27;)
-.count(&#x27;div.g&#x27;)
-.log() // prints out the number of results
-.close();
+### Fixed
+- .<span class="apidocCodeKeywordSpan">open</span>() now rejects on fail - thanks @w33ble.
+- .crop() now works with zoomFactor other than 1 - thanks @wong2.
+- .waitForSelector() now uses JQuery for selectors (when avialable)
+- navigationRequested callback now called with correct parameters -
+thanks @grahamkennery.
+- Tabs/pages not opened by Horseman (e.g. by a link)
+are now correctly added to Horseman&#x27;s list of tabs
 ...</pre></li>
     </ul>
 
@@ -8478,21 +8655,21 @@ The `paperSize` object should be in either this format:
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-If no `selector` is provided, it returns the HTML of the entire page.
-If `file` is provided, the HTML will be written to that filename.
+- `diskCache` and `diskCachePath` options - thanks @efernandesng
 
-#### .text(selector)
+## 3.1.1 - 2016-06-17
+Republish 3.1.0 without unwanted files which broke Windows installation
 
-Gets the text inside of an element.
+## 3.1.0 - 2016-06-15
+### Added
+- .<span class="apidocCodeKeywordSpan">plainText</span>() action - thanks @mzhangARS
 
-#### .<span class="apidocCodeKeywordSpan">plainText</span>()
+### Changed
+- Removed `port` constructor option (it no longer had any effect)
 
-Gets the plain text of the whole page (using PhantomJS&#x27;s [`plainText`](http://phantomjs.org/api/webpage/property/plain-text
-.html) property).
-
-#### .value(selector, \[val\])
-
-Get, or set, the value of an element.
+## 3.0.1 - 2016-04-12
+### Fixed
+- .injectJs() now properly rejects when it fails
 ...</pre></li>
     </ul>
 
@@ -8578,20 +8755,20 @@ horseman
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-
-Load the page at `url`.
-
-#### .post(url, postData)
-
-POST `postData` to the page at `url`.
-
-#### .<span class="apidocCodeKeywordSpan">put</span>(url, putData)
-
-PUT `putData` to the page at `url`.
-
-#### .back()
-
-Go back to the previous page.
+- bluebird 3 functions are now chainable with Horseman actions
+- Support for callback/Promises in .evaluate() functions
+- .at() action allows registering callbacks to run in PhantomJS JavaScript
+  environment (see Reame for details)
+- .setProxy() action allows changing Phantom&#x27;s proxy settings
+  (requires PhantomJS 2.0.0 or newer)
+- .includeJs() action allows injecting JavaScript from a URL
+- .<span class="apidocCodeKeywordSpan">put</span>() action
+- Support for SlimerJS as well as PhantomJS - thanks @w33ble
+- Support for PhantomJS remote debugger - thanks @dustinblackman
+- Support for reading cookies.txt files
+- Options for injecting bluebird into each page for using Promises in browser
+- Option for automatically switching to newly opened tabs
+- Option for more verbose debug
 ...</pre></li>
     </ul>
 
@@ -8896,21 +9073,21 @@ Sets the value of an element to `&#x27;&#x27;`.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-    http://phantomjs.org/api/command-line.html).
-    **These options have precedence over options implicitly set by Horseman.**
-  * `debugPort`: Enable web inspector on specified port, default not set.
-  * `debugAutorun`: Autorun on launch when in debug mode, default is true.
 
-### Configuration
-
-#### .<span class="apidocCodeKeywordSpan">setProxy</span>(ip, \[port\], \[type\], \[user, pass\])
-
-Dynamically set proxy settings (***requires PhantomJS 2.0.0 or above***).
-The `ip` argument can either be the IP of the proxy server,
-or a URI of the form `type://user:pass@ip:port`.
-
-The `port` is optional and defaults to `80`.
-The `type` is optional and defaults to `&#x27;http&#x27;`.
+## 3.0.0-beta1 - 2016-03-22
+### Added
+- bluebird 3 functions are now chainable with Horseman actions
+- Support for callback/Promises in .evaluate() functions
+- .at() action allows registering callbacks to run in PhantomJS JavaScript
+  environment (see Reame for details)
+- .<span class="apidocCodeKeywordSpan">setProxy</span>() action allows changing Phantom&#x27;s proxy settings
+  (requires PhantomJS 2.0.0 or newer)
+- .includeJs() action allows injecting JavaScript from a URL
+- .put() action
+- Support for SlimerJS as well as PhantomJS - thanks @w33ble
+- Support for PhantomJS remote debugger - thanks @dustinblackman
+- Support for reading cookies.txt files
+- Options for injecting bluebird into each page for using Promises in browser
 ...</pre></li>
     </ul>
 
@@ -8941,7 +9118,23 @@ The `type` is optional and defaults to `&#x27;http&#x27;`.
     <li>description and source-code<pre class="apidocCodePre">some = function (howMany) {
     return some(this, howMany);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+				timeout: defaultTimeout,
+				proxy: &#x27;localhost:&#x27; + PROXY_PORT,
+				proxyType: &#x27;http&#x27;,
+			});
+			var hadHeader = false;
+			return horseman
+				.on(&#x27;resourceReceived&#x27;, function(resp) {
+					var hasHeader = resp.headers.<span class="apidocCodeKeywordSpan">some</span>(function(header) {
+						return header.name === PROXY_HEADER;
+					});
+					hadHeader = hadHeader || hasHeader;
+				})
+				.open(&#x27;http://www.google.com&#x27;)
+				.close()
+				.then(function() {
+...</pre></li>
     </ul>
 
 
@@ -8979,20 +9172,21 @@ The `type` is optional and defaults to `&#x27;http&#x27;`.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+## 2.4.0 - 2015-10-08
+### Added
+- .do(). Closes #53.
 
-Go back to the previous page.
+## 2.3.0 - 2015-10-01
+### Added
+- Support for multiple tabs. Closes #49.
+- .<span class="apidocCodeKeywordSpan">status</span>(). Returns the HTTP status code from the last opened page.
 
-#### .forward()
+## 2.2.1 - 2015-10-01
+### Fixed
+- `.waitFor` bug fix. Closes #45.
 
-Go forward to the next page.
-
-#### .<span class="apidocCodeKeywordSpan">status</span>()
-
-The HTTP status code returned for the page just opened.
-
-#### .reload()
-
-Refresh the current page.
+## 2.2.0 - 2015-09-29
+### Added
 ...</pre></li>
     </ul>
 
@@ -9030,21 +9224,21 @@ Refresh the current page.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-* @param {string|integer} nameOrPosition - Name or position of frame
-* to switch to
-*/
-exports.switchToChildFrame = util.deprecate(function(nameOrPosition) {
-	var self = this;
-	return this.ready.then(function() {
-		return HorsemanPromise.fromCallback(function(done) {
-			debug(&#x27;.<span class="apidocCodeKeywordSpan">switchToChildFrame</span>()&#x27;, nameOrPosition);
-			return self.page.switchToChildFrame(nameOrPosition, done);
-		});
-	});
-}, &#x27;Horseman#switchToChildFrame: Use Horseman#switchToFrame instead&#x27;);
 
-/**
-* Switch to the main frame.
+### Fixed
+- More readable stack traces from .evaluate() rejections
+  (especially with long stack traces on)
+- Occasional bug with returning undefined in .evaluate() function
+
+### Deprecated
+- .<span class="apidocCodeKeywordSpan">switchToChildFrame</span>() action is deprecated
+  since PhantomJS deprecated it
+
+## 3.0.0-beta1 - 2016-03-22
+### Added
+- bluebird 3 functions are now chainable with Horseman actions
+- Support for callback/Promises in .evaluate() functions
+- .at() action allows registering callbacks to run in PhantomJS JavaScript
 ...</pre></li>
     </ul>
 
@@ -9065,20 +9259,21 @@ exports.switchToChildFrame = util.deprecate(function(nameOrPosition) {
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+### Added
+- .closeTab() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+  (by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .<span class="apidocCodeKeywordSpan">switchToFocusedFrame</span>() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-Get the number of frames inside the current frame.
-
-#### .frameNames()
-
-Get the names of the frames inside the current frame.
-
-#### .<span class="apidocCodeKeywordSpan">switchToFocusedFrame</span>()
-
-Switch to the frame that is in focus.
-
-#### .switchToFrame(nameOrPosition)
-
-Switch to the frame specified by a frame name or a frame position.
+### Changed
 ...</pre></li>
     </ul>
 
@@ -9099,20 +9294,21 @@ Switch to the frame specified by a frame name or a frame position.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+- .closeTab() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+  (by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .<span class="apidocCodeKeywordSpan">switchToFrame</span>() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-Get the names of the frames inside the current frame.
-
-#### .switchToFocusedFrame()
-
-Switch to the frame that is in focus.
-
-#### .<span class="apidocCodeKeywordSpan">switchToFrame</span>(nameOrPosition)
-
-Switch to the frame specified by a frame name or a frame position.
-
-#### .switchToMainFrame()
-
-Switch to the main frame of the page.
+### Changed
+- .log() now preserves resolution value of previous action
 ...</pre></li>
     </ul>
 
@@ -9133,21 +9329,21 @@ Switch to the main frame of the page.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+- tabClosed event fired when a tab is closed
+  (by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .<span class="apidocCodeKeywordSpan">switchToMainFrame</span>() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-Switch to the frame that is in focus.
-
-#### .switchToFrame(nameOrPosition)
-
-Switch to the frame specified by a frame name or a frame position.
-
-#### .<span class="apidocCodeKeywordSpan">switchToMainFrame</span>()
-
-Switch to the main frame of the page.
-
-#### .switchToParentFrame()
-
-Switch to the parent frame of the current frame.
-Resolves to `true` it switched frames
+### Changed
+- .log() now preserves resolution value of previous action
+- More output added to verbose debugging
 ...</pre></li>
     </ul>
 
@@ -9168,20 +9364,20 @@ Resolves to `true` it switched frames
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+  (by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .<span class="apidocCodeKeywordSpan">switchToParentFrame</span>() action
+- .download() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-Switch to the frame specified by a frame name or a frame position.
-
-#### .switchToMainFrame()
-
-Switch to the main frame of the page.
-
-#### .<span class="apidocCodeKeywordSpan">switchToParentFrame</span>()
-
-Switch to the parent frame of the current frame.
-Resolves to `true` it switched frames
-and `false` if it did not (i.e., the main frame was the current frame).
-
-### Tabs
+### Changed
+- .log() now preserves resolution value of previous action
+- More output added to verbose debugging
 ...</pre></li>
     </ul>
 
@@ -9481,7 +9677,23 @@ Save the file as `twitter.js`. Then, `node twitter.js`.
 
     return ret;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+				.match(/keyCode=13/);
+		});
+	});
+}
+
+var phantomVersion;
+describe(&#x27;Horseman&#x27;, function() {
+	this.<span class="apidocCodeKeywordSpan">timeout</span>(20000);
+
+	/**
+	 * Setup an express server for testing purposes.
+	 */
+	before(function(done) {
+		app = express();
+		var port = process.env.port || defaultPort;
+...</pre></li>
     </ul>
 
 
@@ -9629,21 +9841,20 @@ horseman
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-#### .type(selector, text, \[options\])
 
-Enters the `text` provided into the `selector` element.
-Options is an object containing `eventType`
-(`&#x27;keypress&#x27;`, `&#x27;keyup&#x27;`, `&#x27;keydown&#x27;`. Default is `&#x27;keypress&#x27;`)
-and `modifiers`, which is a string in the form of `ctrl+shift+alt`.
+## 2.8.2 - 2015-11-23
+### Fixed
+- #74 - do not try to exit PhantomJS when it failed to initialize
 
-#### .<span class="apidocCodeKeywordSpan">upload</span>(selector, path)
+## 2.8.1 - 2015-11-06
+### Fixed
+- .<span class="apidocCodeKeywordSpan">upload</span>() now works in PhantomJS 1.x line (still broken in 2.x line) -
+  thanks @flashhhh
+- logging for falsy arguments - thanks @awlayton
 
-Specify the `path` to upload into a file input `selector` element.
-
-#### .download(url, \[path\], \[binary\])
-
-Download the contents of `url`.
-If `path` is supplied the contents will be written there,
+## 2.8.0 - 2015-10-28
+### Added
+- .cropBase64(). Thanks @jeprojects!
 ...</pre></li>
     </ul>
 
@@ -9734,21 +9945,20 @@ horseman
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+- Upgraded to node-phantom-simple 2.0.2. Close #37.
+- Upgraded to Mocha 2.2.5 to remove &#x22;child_process: customFds option is
+deprecated, use stdio instead&#x22; message when testing.
+- Edited this document to reflect actual release dates from 1.4.1 - present.
 
-Gets the text inside of an element.
+## 1.5.4 - 2015-07-22
+### Fixed
+- Merges #36 - Setting via horseman.<span class="apidocCodeKeywordSpan">value</span>( newVal ) now fires a change event.
+Thanks @fpinzn.
 
-#### .plainText()
-
-Gets the plain text of the whole page (using PhantomJS&#x27;s [`plainText`](http://phantomjs.org/api/webpage/property/plain-text
-.html) property).
-
-#### .<span class="apidocCodeKeywordSpan">value</span>(selector, \[val\])
-
-Get, or set, the value of an element.
-
-#### .attribute(selector, attribute)
-
-Gets an attribute of an element.
+## 1.5.3 - 2015-07-13
+### Fixed
+- Fix #27 &#x26; 33 - .cookies() wasn&#x27;t returning a list of cookies for the current
+page. Now fixed.
 ...</pre></li>
     </ul>
 
@@ -9769,21 +9979,21 @@ Gets an attribute of an element.
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-        &#x22;user&#x22;: &#x22;myUserName&#x22;
-      }
-    */
-    return horseman.close();
-  });
-```
+- .close() is now chainable. Updated readme with examples.
 
-#### .<span class="apidocCodeKeywordSpan">viewport</span>(width, height)
+## 2.5.0 - 2015-10-08
+### Added
+- .log(). Closes #54.
 
-Set the `width` and `height` of the viewport, useful for screenshotting.
-You have to set the viewport before calling `.open()`.
+### Fixed
+- .<span class="apidocCodeKeywordSpan">viewport</span>() wasn&#x27;t returning the actual viewport size.
 
-#### .scrollTo(top, left)
+## 2.4.0 - 2015-10-08
+### Added
+- .do(). Closes #53.
 
-Scroll to a position on the page,
+## 2.3.0 - 2015-10-01
+### Added
 ...</pre></li>
     </ul>
 
@@ -9943,20 +10153,21 @@ Wait until the element `selector` is present,
 		});
 	}</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+- Phantom&#x27;s reourceTimeout now set to match Horseman&#x27;s timeout
+- Horseman will use Phantom from the phantomjs-prebuilt/phantomjs npm packages
+  if installed (still overridden by phantomPath option)
 
-horseman
-  .userAgent(&#x27;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0&#x27;)
-  .open(&#x27;http://www.google.com&#x27;)
-  .type(&#x27;input[name=&#x22;q&#x22;]&#x27;, &#x27;github&#x27;)
-  .click(&#x27;[name=&#x22;btnK&#x22;]&#x27;)
-  .keyboardEvent(&#x27;keypress&#x27;, 16777221)
-  .<span class="apidocCodeKeywordSpan">waitForSelector</span>(&#x27;div.g&#x27;)
-  .count(&#x27;div.g&#x27;)
-  .log() // prints out the number of results
-  .close();
-```
+### Fixed
+- .open() now rejects on fail - thanks @w33ble.
+- .crop() now works with zoomFactor other than 1 - thanks @wong2.
+- .<span class="apidocCodeKeywordSpan">waitForSelector</span>() now uses JQuery for selectors (when avialable)
+- navigationRequested callback now called with correct parameters -
+  thanks @grahamkennery.
+- Tabs/pages not opened by Horseman (e.g. by a link)
+  are now correctly added to Horseman&#x27;s list of tabs
 
-Save the file as `google.js`. Then, `node google.js`.
+### Updated
+- bluebird dependency to 3.0.1
 ...</pre></li>
     </ul>
 
@@ -10142,21 +10353,21 @@ exports.viewport = function(width, height) {
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-```js
-horseman
-  .on(&#x27;consoleMessage&#x27;, function( msg ){
-    console.log(msg);
-  })
-```
+- .switchToChildFrame() action is deprecated
+  since PhantomJS deprecated it
 
-#### .<span class="apidocCodeKeywordSpan">at</span>(event, callback)
-
-Respond to page events with the callback.
-Be sure to set these before calling `.open()`.
-The `callback` is evaluated in PhantomJS.
-If you do not need to return from `callback`, you probably want `.on` instead.
-
-Useful events are:
+## 3.0.0-beta1 - 2016-03-22
+### Added
+- bluebird 3 functions are now chainable with Horseman actions
+- Support for callback/Promises in .evaluate() functions
+- .<span class="apidocCodeKeywordSpan">at</span>() action allows registering callbacks to run in PhantomJS JavaScript
+  environment (see Reame for details)
+- .setProxy() action allows changing Phantom&#x27;s proxy settings
+  (requires PhantomJS 2.0.0 or newer)
+- .includeJs() action allows injecting JavaScript from a URL
+- .put() action
+- Support for SlimerJS as well as PhantomJS - thanks @w33ble
+- Support for PhantomJS remote debugger - thanks @dustinblackman
 ...</pre></li>
     </ul>
 
@@ -10295,21 +10506,20 @@ Go forward to the next page.
 	}, selector);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-				return HorsemanPromise.fromCallback(function(done) {
-					return self.page.set(&#x27;clipRect&#x27;, prevClipRect, done);
-				});
-			});
-	}
-	if (typeof area === &#x27;string&#x27;) {
-		return this
-			.<span class="apidocCodeKeywordSpan">boundingRectangle</span>(area)
-			.then(doCrop);
-	} else {
-		return doCrop(area);
-	}
-};
+## 3.3.0 - 2017-04-06
+### Added
+- `phantomOptions` option for passing arbitrary PhantomJS CLI options -
+  thanks @fabiocorneti
+- Support for per-action timeouts on `.waitFor` type actions - thanks @piercus
 
-/**
+### Fixed
+- `.<span class="apidocCodeKeywordSpan">boundingRectangle</span>()` sometimes not using jQuery when it could -
+  thanks @robsgreen
+- `.evaluate()` sometimes failing due to an utilized internal variable -
+  thanks @robertpallas
+
+### Changed
+- Removed `clientScripts` option (it had no effect anyways)
 ...</pre></li>
     </ul>
 
@@ -10413,19 +10623,20 @@ horseman
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
 
-Returns the number of tabs currently open.
+## 3.0.0 - 2016-04-06
+### Added
+- Support for adding custom actions via `Horseman.registerAction`
 
-#### .switchToTab(tabnumber)
-
-Switch to another tab. Count starts at 0.
-
-#### .<span class="apidocCodeKeywordSpan">closeTab</span>(tabNum)
-
-Close an open tab. Count starts at 0.
-
-### Events
-
-#### .on(event, callback)
+## 3.0.0-beta2 - 2016-04-05
+### Added
+- .<span class="apidocCodeKeywordSpan">closeTab</span>() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+  (by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
 ...</pre></li>
     </ul>
 
@@ -10500,21 +10711,21 @@ Close an open tab. Count starts at 0.
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+## 1.5.4 - 2015-07-22
+### Fixed
+- Merges #36 - Setting via horseman.value( newVal ) now fires a change event.
+  Thanks @fpinzn.
 
-The HTTP status code returned for the page just opened.
+## 1.5.3 - 2015-07-13
+### Fixed
+- Fix #27 &#x26; 33 - .<span class="apidocCodeKeywordSpan">cookies</span>() wasn&#x27;t returning a list of cookies for the current
+  page. Now fixed.
 
-#### .reload()
+## 1.5.2 - 2015-07-01
+### Fixed
+- Fix #30 - crop() now chainable. Thanks @jackstrain.
 
-Refresh the current page.
-
-#### .<span class="apidocCodeKeywordSpan">cookies</span>(\[object|array of objects|string\])
-
-Without any options,
-this function will return all the cookies inside the browser.
-
-```js
-horseman
-.open(&#x27;http://httpbin.org/cookies&#x27;)
+## 1.5.1 - 2015-03-10
 ...</pre></li>
     </ul>
 
@@ -10608,21 +10819,21 @@ Save the file as `google.js`. Then, `node google.js`.
 	}
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-Useful for debugging.
+- Waiting actions now reject on timeout (timeout callback is still called too)
+- Phantom&#x27;s reourceTimeout now set to match Horseman&#x27;s timeout
+- Horseman will use Phantom from the phantomjs-prebuilt/phantomjs npm packages
+  if installed (still overridden by phantomPath option)
 
-#### .screenshotBase64(type)
+### Fixed
+- .open() now rejects on fail - thanks @w33ble.
+- .<span class="apidocCodeKeywordSpan">crop</span>() now works with zoomFactor other than 1 - thanks @wong2.
+- .waitForSelector() now uses JQuery for selectors (when avialable)
+- navigationRequested callback now called with correct parameters -
+  thanks @grahamkennery.
+- Tabs/pages not opened by Horseman (e.g. by a link)
+  are now correctly added to Horseman&#x27;s list of tabs
 
-Returns a base64 encoded string representing the screenshot.
-Type must be one of &#x27;PNG&#x27;, &#x27;GIF&#x27;, or &#x27;JPEG&#x27;.
-
-#### .<span class="apidocCodeKeywordSpan">crop</span>(area, path)
-
-[getBoundingClientRect]: https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-Takes a cropped screenshot of the page.
-`area` can be a string identifying an html element on the screen to crop to,
-or a [getBoundingClientRect][] object.
-
-#### .cropBase64(area, type)
+### Updated
 ...</pre></li>
     </ul>
 
@@ -10685,21 +10896,21 @@ or a [getBoundingClientRect][] object.
 	}
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-#### .crop(area, path)
+### Fixed
+- .upload() now works in PhantomJS 1.x line (still broken in 2.x line) -
+  thanks @flashhhh
+- logging for falsy arguments - thanks @awlayton
 
-[getBoundingClientRect]: https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-Takes a cropped screenshot of the page.
-`area` can be a string identifying an html element on the screen to crop to,
-or a [getBoundingClientRect][] object.
+## 2.8.0 - 2015-10-28
+### Added
+- .<span class="apidocCodeKeywordSpan">cropBase64</span>(). Thanks @jeprojects!
 
-#### .<span class="apidocCodeKeywordSpan">cropBase64</span>(area, type)
+### Updated
+- node-phantom-simple dependency to version 2.1.0.
+- Updated readme with examples on how to set header/footer contents.
 
-Returns a string representing a cropped, base64 encoded screenshot of the page.
-`area` can be a string identifying an html element on the screen to crop to,
-or a [getBoundingClientRect][] object.
-Type must be one of &#x27;PNG&#x27;, &#x27;GIF&#x27;, or &#x27;JPEG&#x27;.
-
-#### .pdf(path, \[paperSize\])
+## 2.7.1 - 2015-10-21
+### Fixed
 ...</pre></li>
     </ul>
 
@@ -10756,21 +10967,21 @@ Gets the width of an element.
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-.count(&#x27;a&#x27;)
-.log() // outputs the number of anchor tags
-.click(&#x27;a&#x27;)
-.log(&#x27;clicked the button&#x27;) //outputs the string
-.close();
-```
+- .log(). Closes #54.
 
-#### .<span class="apidocCodeKeywordSpan">do</span>(fn)
+### Fixed
+- .viewport() wasn&#x27;t returning the actual viewport size.
 
-Run an function without breaking the chain. Works with asynchronous functions.
-Must call the callback when complete.
+## 2.4.0 - 2015-10-08
+### Added
+- .<span class="apidocCodeKeywordSpan">do</span>(). Closes #53.
 
-```js
-horseman
-.open(&#x27;http://www.google.com&#x27;)
+## 2.3.0 - 2015-10-01
+### Added
+- Support for multiple tabs. Closes #49.
+- .status(). Returns the HTTP status code from the last opened page.
+
+## 2.2.1 - 2015-10-01
 ...</pre></li>
     </ul>
 
@@ -10823,20 +11034,21 @@ horseman
 		});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-(`&#x27;keypress&#x27;`, `&#x27;keyup&#x27;`, `&#x27;keydown&#x27;`. Default is `&#x27;keypress&#x27;`)
-and `modifiers`, which is a string in the form of `ctrl+shift+alt`.
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .<span class="apidocCodeKeywordSpan">download</span>() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-#### .upload(selector, path)
+### Changed
+- .log() now preserves resolution value of previous action
+- More output added to verbose debugging
 
-Specify the `path` to upload into a file input `selector` element.
-
-#### .<span class="apidocCodeKeywordSpan">download</span>(url, \[path\], \[binary\])
-
-Download the contents of `url`.
-If `path` is supplied the contents will be written there,
-otherwise this gets the contents.
-If `binary` is `true` it gets the contents as a node `Buffer`,
-otherwise it gets them as a string (`binary` defaults to `false`).
+### Fixed
 ...</pre></li>
     </ul>
 
@@ -10992,21 +11204,21 @@ otherwise it gets them as a string (`binary` defaults to `false`).
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-.open(&#x27;http://www.google.com&#x27;)
-.do(function(done){
-  setTimeout(done,1000);
-})
-.close();
-```
+- `phantomOptions` option for passing arbitrary PhantomJS CLI options -
+  thanks @fabiocorneti
+- Support for per-action timeouts on `.waitFor` type actions - thanks @piercus
 
-#### .<span class="apidocCodeKeywordSpan">evaluate</span>(fn, \[arg1, arg2,...\])
+### Fixed
+- `.boundingRectangle()` sometimes not using jQuery when it could -
+  thanks @robsgreen
+- `.<span class="apidocCodeKeywordSpan">evaluate</span>()` sometimes failing due to an utilized internal variable -
+  thanks @robertpallas
 
-Invokes `fn` on the page with args. On completion it returns a value.
-Useful for extracting information from the page.
+### Changed
+- Removed `clientScripts` option (it had no effect anyways)
 
-```js
-horseman
-.open(&#x27;http://en.wikipedia.org/wiki/Headless_Horseman&#x27;)
+## 3.2.0 - 2016-10-21
+### Added
 ...</pre></li>
     </ul>
 
@@ -11099,19 +11311,20 @@ The HTTP status code returned for the page just opened.
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
 
-### Frames
-
-#### .frameName()
-
-Get the name of the current frame.
-
-#### .<span class="apidocCodeKeywordSpan">frameCount</span>()
-
-Get the number of frames inside the current frame.
-
-#### .frameNames()
-
-Get the names of the frames inside the current frame.
+## 3.0.0-beta2 - 2016-04-05
+### Added
+- .closeTab() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+(by .closeTab() or something else)
+- .frameName() action
+- .<span class="apidocCodeKeywordSpan">frameCount</span>() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+(even works for binary files is using PhantomJS 2 or newer)
 ...</pre></li>
     </ul>
 
@@ -11134,20 +11347,21 @@ Get the names of the frames inside the current frame.
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-`fn` : function to execute, mandatory
-`args` : `fn` arguments
-`value` : Wait until the `fn` evaluated on the page returns the *specified* `value`.
-`timeout` : specific timeout
+- Support for adding custom actions via `Horseman.registerAction`
 
-### Frames
-
-#### .<span class="apidocCodeKeywordSpan">frameName</span>()
-
-Get the name of the current frame.
-
-#### .frameCount()
-
-Get the number of frames inside the current frame.
+## 3.0.0-beta2 - 2016-04-05
+### Added
+- .closeTab() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+  (by .closeTab() or something else)
+- .<span class="apidocCodeKeywordSpan">frameName</span>() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
 ...</pre></li>
     </ul>
 
@@ -11170,20 +11384,20 @@ Get the number of frames inside the current frame.
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-
-Get the name of the current frame.
-
-#### .frameCount()
-
-Get the number of frames inside the current frame.
-
-#### .<span class="apidocCodeKeywordSpan">frameNames</span>()
-
-Get the names of the frames inside the current frame.
-
-#### .switchToFocusedFrame()
-
-Switch to the frame that is in focus.
+## 3.0.0-beta2 - 2016-04-05
+### Added
+- .closeTab() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+(by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .<span class="apidocCodeKeywordSpan">frameNames</span>() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+(even works for binary files is using PhantomJS 2 or newer)
 ...</pre></li>
     </ul>
 
@@ -11329,21 +11543,21 @@ horseman
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-***Please note: binary downloads do not work correctly with PhantomJS 1.x***
-
-
-#### .injectJs(file)
-
-Inject a JavaScript file onto the page.
-
-#### .<span class="apidocCodeKeywordSpan">includeJs</span>(url)
-
-Include an external JavaScript script on the page via URL.
-
-#### .mouseEvent(type, \[x, y, \[button\]\])
-
-Send a mouse event to the page.
-Each event is sent to the page as if it comes from real user interaction.
+### Added
+- bluebird 3 functions are now chainable with Horseman actions
+- Support for callback/Promises in .evaluate() functions
+- .at() action allows registering callbacks to run in PhantomJS JavaScript
+  environment (see Reame for details)
+- .setProxy() action allows changing Phantom&#x27;s proxy settings
+  (requires PhantomJS 2.0.0 or newer)
+- .<span class="apidocCodeKeywordSpan">includeJs</span>() action allows injecting JavaScript from a URL
+- .put() action
+- Support for SlimerJS as well as PhantomJS - thanks @w33ble
+- Support for PhantomJS remote debugger - thanks @dustinblackman
+- Support for reading cookies.txt files
+- Options for injecting bluebird into each page for using Promises in browser
+- Option for automatically switching to newly opened tabs
+- Option for more verbose debug
 ...</pre></li>
     </ul>
 
@@ -11373,20 +11587,21 @@ Each event is sent to the page as if it comes from real user interaction.
 		});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-otherwise this gets the contents.
-If `binary` is `true` it gets the contents as a node `Buffer`,
-otherwise it gets them as a string (`binary` defaults to `false`).
+- .plainText() action - thanks @mzhangARS
 
-***Please note: binary downloads do not work correctly with PhantomJS 1.x***
+### Changed
+- Removed `port` constructor option (it no longer had any effect)
 
+## 3.0.1 - 2016-04-12
+### Fixed
+- .<span class="apidocCodeKeywordSpan">injectJs</span>() now properly rejects when it fails
+- #158 - bug with `injectBluebird` option
 
-#### .<span class="apidocCodeKeywordSpan">injectJs</span>(file)
+## 3.0.0 - 2016-04-06
+### Added
+- Support for adding custom actions via `Horseman.registerAction`
 
-Inject a JavaScript file onto the page.
-
-#### .includeJs(url)
-
-Include an external JavaScript script on the page via URL.
+## 3.0.0-beta2 - 2016-04-05
 ...</pre></li>
     </ul>
 
@@ -11454,20 +11669,20 @@ Save the file as `google.js`. Then, `node google.js`.
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-  .userAgent(&#x27;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0&#x27;)
-  .open(&#x27;http://www.google.com&#x27;)
-  .type(&#x27;input[name=&#x22;q&#x22;]&#x27;, &#x27;github&#x27;)
-  .click(&#x27;[name=&#x22;btnK&#x22;]&#x27;)
-  .keyboardEvent(&#x27;keypress&#x27;, 16777221)
-  .waitForSelector(&#x27;div.g&#x27;)
-  .count(&#x27;div.g&#x27;)
-  .<span class="apidocCodeKeywordSpan">log</span>() // prints out the number of results
-  .close();
-```
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-Save the file as `google.js`. Then, `node google.js`.
+### Changed
+- .<span class="apidocCodeKeywordSpan">log</span>() now preserves resolution value of previous action
+- More output added to verbose debugging
 
-### Count Twitter Followers Concurrently
+### Fixed
+- More readable stack traces from .evaluate() rejections
+  (especially with long stack traces on)
+- Occasional bug with returning undefined in .evaluate() function
 ...</pre></li>
     </ul>
 
@@ -11661,21 +11876,20 @@ Supported events are:
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+- Horseman Promises now reject on error
+- Waiting actions now reject on timeout (timeout callback is still called too)
+- Phantom&#x27;s reourceTimeout now set to match Horseman&#x27;s timeout
+- Horseman will use Phantom from the phantomjs-prebuilt/phantomjs npm packages
+if installed (still overridden by phantomPath option)
 
-```js
-var Horseman = require(&#x27;node-horseman&#x27;);
-var horseman = new Horseman();
-
-horseman
-.userAgent(&#x27;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0&#x27;)
-.<span class="apidocCodeKeywordSpan">open</span>(&#x27;http://www.google.com&#x27;)
-.type(&#x27;input[name=&#x22;q&#x22;]&#x27;, &#x27;github&#x27;)
-.click(&#x27;[name=&#x22;btnK&#x22;]&#x27;)
-.keyboardEvent(&#x27;keypress&#x27;, 16777221)
-.waitForSelector(&#x27;div.g&#x27;)
-.count(&#x27;div.g&#x27;)
-.log() // prints out the number of results
-.close();
+### Fixed
+- .<span class="apidocCodeKeywordSpan">open</span>() now rejects on fail - thanks @w33ble.
+- .crop() now works with zoomFactor other than 1 - thanks @wong2.
+- .waitForSelector() now uses JQuery for selectors (when avialable)
+- navigationRequested callback now called with correct parameters -
+thanks @grahamkennery.
+- Tabs/pages not opened by Horseman (e.g. by a link)
+are now correctly added to Horseman&#x27;s list of tabs
 ...</pre></li>
     </ul>
 
@@ -11788,21 +12002,21 @@ The `paperSize` object should be in either this format:
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-If no `selector` is provided, it returns the HTML of the entire page.
-If `file` is provided, the HTML will be written to that filename.
+- `diskCache` and `diskCachePath` options - thanks @efernandesng
 
-#### .text(selector)
+## 3.1.1 - 2016-06-17
+Republish 3.1.0 without unwanted files which broke Windows installation
 
-Gets the text inside of an element.
+## 3.1.0 - 2016-06-15
+### Added
+- .<span class="apidocCodeKeywordSpan">plainText</span>() action - thanks @mzhangARS
 
-#### .<span class="apidocCodeKeywordSpan">plainText</span>()
+### Changed
+- Removed `port` constructor option (it no longer had any effect)
 
-Gets the plain text of the whole page (using PhantomJS&#x27;s [`plainText`](http://phantomjs.org/api/webpage/property/plain-text
-.html) property).
-
-#### .value(selector, \[val\])
-
-Get, or set, the value of an element.
+## 3.0.1 - 2016-04-12
+### Fixed
+- .injectJs() now properly rejects when it fails
 ...</pre></li>
     </ul>
 
@@ -11851,20 +12065,20 @@ PUT `putData` to the page at `url`.
 	return this.open(url, &#x27;PUT&#x27;, putData);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-
-Load the page at `url`.
-
-#### .post(url, postData)
-
-POST `postData` to the page at `url`.
-
-#### .<span class="apidocCodeKeywordSpan">put</span>(url, putData)
-
-PUT `putData` to the page at `url`.
-
-#### .back()
-
-Go back to the previous page.
+- bluebird 3 functions are now chainable with Horseman actions
+- Support for callback/Promises in .evaluate() functions
+- .at() action allows registering callbacks to run in PhantomJS JavaScript
+  environment (see Reame for details)
+- .setProxy() action allows changing Phantom&#x27;s proxy settings
+  (requires PhantomJS 2.0.0 or newer)
+- .includeJs() action allows injecting JavaScript from a URL
+- .<span class="apidocCodeKeywordSpan">put</span>() action
+- Support for SlimerJS as well as PhantomJS - thanks @w33ble
+- Support for PhantomJS remote debugger - thanks @dustinblackman
+- Support for reading cookies.txt files
+- Options for injecting bluebird into each page for using Promises in browser
+- Option for automatically switching to newly opened tabs
+- Option for more verbose debug
 ...</pre></li>
     </ul>
 
@@ -12096,21 +12310,21 @@ Sets the value of an element to `&#x27;&#x27;`.
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-    http://phantomjs.org/api/command-line.html).
-    **These options have precedence over options implicitly set by Horseman.**
-  * `debugPort`: Enable web inspector on specified port, default not set.
-  * `debugAutorun`: Autorun on launch when in debug mode, default is true.
 
-### Configuration
-
-#### .<span class="apidocCodeKeywordSpan">setProxy</span>(ip, \[port\], \[type\], \[user, pass\])
-
-Dynamically set proxy settings (***requires PhantomJS 2.0.0 or above***).
-The `ip` argument can either be the IP of the proxy server,
-or a URI of the form `type://user:pass@ip:port`.
-
-The `port` is optional and defaults to `80`.
-The `type` is optional and defaults to `&#x27;http&#x27;`.
+## 3.0.0-beta1 - 2016-03-22
+### Added
+- bluebird 3 functions are now chainable with Horseman actions
+- Support for callback/Promises in .evaluate() functions
+- .at() action allows registering callbacks to run in PhantomJS JavaScript
+  environment (see Reame for details)
+- .<span class="apidocCodeKeywordSpan">setProxy</span>() action allows changing Phantom&#x27;s proxy settings
+  (requires PhantomJS 2.0.0 or newer)
+- .includeJs() action allows injecting JavaScript from a URL
+- .put() action
+- Support for SlimerJS as well as PhantomJS - thanks @w33ble
+- Support for PhantomJS remote debugger - thanks @dustinblackman
+- Support for reading cookies.txt files
+- Options for injecting bluebird into each page for using Promises in browser
 ...</pre></li>
     </ul>
 
@@ -12137,20 +12351,21 @@ The `type` is optional and defaults to `&#x27;http&#x27;`.
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+## 2.4.0 - 2015-10-08
+### Added
+- .do(). Closes #53.
 
-Go back to the previous page.
+## 2.3.0 - 2015-10-01
+### Added
+- Support for multiple tabs. Closes #49.
+- .<span class="apidocCodeKeywordSpan">status</span>(). Returns the HTTP status code from the last opened page.
 
-#### .forward()
+## 2.2.1 - 2015-10-01
+### Fixed
+- `.waitFor` bug fix. Closes #45.
 
-Go forward to the next page.
-
-#### .<span class="apidocCodeKeywordSpan">status</span>()
-
-The HTTP status code returned for the page just opened.
-
-#### .reload()
-
-Refresh the current page.
+## 2.2.0 - 2015-09-29
+### Added
 ...</pre></li>
     </ul>
 
@@ -12171,21 +12386,21 @@ Refresh the current page.
   return fn.apply(this, arguments);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-* @param {string|integer} nameOrPosition - Name or position of frame
-* to switch to
-*/
-exports.switchToChildFrame = util.deprecate(function(nameOrPosition) {
-	var self = this;
-	return this.ready.then(function() {
-		return HorsemanPromise.fromCallback(function(done) {
-			debug(&#x27;.<span class="apidocCodeKeywordSpan">switchToChildFrame</span>()&#x27;, nameOrPosition);
-			return self.page.switchToChildFrame(nameOrPosition, done);
-		});
-	});
-}, &#x27;Horseman#switchToChildFrame: Use Horseman#switchToFrame instead&#x27;);
 
-/**
-* Switch to the main frame.
+### Fixed
+- More readable stack traces from .evaluate() rejections
+  (especially with long stack traces on)
+- Occasional bug with returning undefined in .evaluate() function
+
+### Deprecated
+- .<span class="apidocCodeKeywordSpan">switchToChildFrame</span>() action is deprecated
+  since PhantomJS deprecated it
+
+## 3.0.0-beta1 - 2016-03-22
+### Added
+- bluebird 3 functions are now chainable with Horseman actions
+- Support for callback/Promises in .evaluate() functions
+- .at() action allows registering callbacks to run in PhantomJS JavaScript
 ...</pre></li>
     </ul>
 
@@ -12208,20 +12423,21 @@ exports.switchToChildFrame = util.deprecate(function(nameOrPosition) {
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+### Added
+- .closeTab() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+  (by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .<span class="apidocCodeKeywordSpan">switchToFocusedFrame</span>() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-Get the number of frames inside the current frame.
-
-#### .frameNames()
-
-Get the names of the frames inside the current frame.
-
-#### .<span class="apidocCodeKeywordSpan">switchToFocusedFrame</span>()
-
-Switch to the frame that is in focus.
-
-#### .switchToFrame(nameOrPosition)
-
-Switch to the frame specified by a frame name or a frame position.
+### Changed
 ...</pre></li>
     </ul>
 
@@ -12244,20 +12460,21 @@ Switch to the frame specified by a frame name or a frame position.
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+- .closeTab() action removes a tab and closes its page
+- tabClosed event fired when a tab is closed
+  (by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .<span class="apidocCodeKeywordSpan">switchToFrame</span>() action
+- .switchToMainFrame() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-Get the names of the frames inside the current frame.
-
-#### .switchToFocusedFrame()
-
-Switch to the frame that is in focus.
-
-#### .<span class="apidocCodeKeywordSpan">switchToFrame</span>(nameOrPosition)
-
-Switch to the frame specified by a frame name or a frame position.
-
-#### .switchToMainFrame()
-
-Switch to the main frame of the page.
+### Changed
+- .log() now preserves resolution value of previous action
 ...</pre></li>
     </ul>
 
@@ -12280,21 +12497,21 @@ Switch to the main frame of the page.
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+- tabClosed event fired when a tab is closed
+  (by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .<span class="apidocCodeKeywordSpan">switchToMainFrame</span>() action
+- .switchToParentFrame() action
+- .download() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-Switch to the frame that is in focus.
-
-#### .switchToFrame(nameOrPosition)
-
-Switch to the frame specified by a frame name or a frame position.
-
-#### .<span class="apidocCodeKeywordSpan">switchToMainFrame</span>()
-
-Switch to the main frame of the page.
-
-#### .switchToParentFrame()
-
-Switch to the parent frame of the current frame.
-Resolves to `true` it switched frames
+### Changed
+- .log() now preserves resolution value of previous action
+- More output added to verbose debugging
 ...</pre></li>
     </ul>
 
@@ -12317,20 +12534,20 @@ Resolves to `true` it switched frames
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+  (by .closeTab() or something else)
+- .frameName() action
+- .frameCount() action
+- .frameNames() action
+- .switchToFocusedFrame() action
+- .switchToFrame() action
+- .switchToMainFrame() action
+- .<span class="apidocCodeKeywordSpan">switchToParentFrame</span>() action
+- .download() action allows getting the raw contents of a URL
+  (even works for binary files is using PhantomJS 2 or newer)
 
-Switch to the frame specified by a frame name or a frame position.
-
-#### .switchToMainFrame()
-
-Switch to the main frame of the page.
-
-#### .<span class="apidocCodeKeywordSpan">switchToParentFrame</span>()
-
-Switch to the parent frame of the current frame.
-Resolves to `true` it switched frames
-and `false` if it did not (i.e., the main frame was the current frame).
-
-### Tabs
+### Changed
+- .log() now preserves resolution value of previous action
+- More output added to verbose debugging
 ...</pre></li>
     </ul>
 
@@ -12584,21 +12801,20 @@ horseman
 		});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-#### .type(selector, text, \[options\])
 
-Enters the `text` provided into the `selector` element.
-Options is an object containing `eventType`
-(`&#x27;keypress&#x27;`, `&#x27;keyup&#x27;`, `&#x27;keydown&#x27;`. Default is `&#x27;keypress&#x27;`)
-and `modifiers`, which is a string in the form of `ctrl+shift+alt`.
+## 2.8.2 - 2015-11-23
+### Fixed
+- #74 - do not try to exit PhantomJS when it failed to initialize
 
-#### .<span class="apidocCodeKeywordSpan">upload</span>(selector, path)
+## 2.8.1 - 2015-11-06
+### Fixed
+- .<span class="apidocCodeKeywordSpan">upload</span>() now works in PhantomJS 1.x line (still broken in 2.x line) -
+  thanks @flashhhh
+- logging for falsy arguments - thanks @awlayton
 
-Specify the `path` to upload into a file input `selector` element.
-
-#### .download(url, \[path\], \[binary\])
-
-Download the contents of `url`.
-If `path` is supplied the contents will be written there,
+## 2.8.0 - 2015-10-28
+### Added
+- .cropBase64(). Thanks @jeprojects!
 ...</pre></li>
     </ul>
 
@@ -12735,21 +12951,20 @@ horseman
 	}
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+- Upgraded to node-phantom-simple 2.0.2. Close #37.
+- Upgraded to Mocha 2.2.5 to remove &#x22;child_process: customFds option is
+deprecated, use stdio instead&#x22; message when testing.
+- Edited this document to reflect actual release dates from 1.4.1 - present.
 
-Gets the text inside of an element.
+## 1.5.4 - 2015-07-22
+### Fixed
+- Merges #36 - Setting via horseman.<span class="apidocCodeKeywordSpan">value</span>( newVal ) now fires a change event.
+Thanks @fpinzn.
 
-#### .plainText()
-
-Gets the plain text of the whole page (using PhantomJS&#x27;s [`plainText`](http://phantomjs.org/api/webpage/property/plain-text
-.html) property).
-
-#### .<span class="apidocCodeKeywordSpan">value</span>(selector, \[val\])
-
-Get, or set, the value of an element.
-
-#### .attribute(selector, attribute)
-
-Gets an attribute of an element.
+## 1.5.3 - 2015-07-13
+### Fixed
+- Fix #27 &#x26; 33 - .cookies() wasn&#x27;t returning a list of cookies for the current
+page. Now fixed.
 ...</pre></li>
     </ul>
 
@@ -12788,21 +13003,21 @@ Gets an attribute of an element.
 	}
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
-        &#x22;user&#x22;: &#x22;myUserName&#x22;
-      }
-    */
-    return horseman.close();
-  });
-```
+- .close() is now chainable. Updated readme with examples.
 
-#### .<span class="apidocCodeKeywordSpan">viewport</span>(width, height)
+## 2.5.0 - 2015-10-08
+### Added
+- .log(). Closes #54.
 
-Set the `width` and `height` of the viewport, useful for screenshotting.
-You have to set the viewport before calling `.open()`.
+### Fixed
+- .<span class="apidocCodeKeywordSpan">viewport</span>() wasn&#x27;t returning the actual viewport size.
 
-#### .scrollTo(top, left)
+## 2.4.0 - 2015-10-08
+### Added
+- .do(). Closes #53.
 
-Scroll to a position on the page,
+## 2.3.0 - 2015-10-01
+### Added
 ...</pre></li>
     </ul>
 
@@ -13009,20 +13224,21 @@ Wait until the element `selector` is present,
 	});
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
+- Phantom&#x27;s reourceTimeout now set to match Horseman&#x27;s timeout
+- Horseman will use Phantom from the phantomjs-prebuilt/phantomjs npm packages
+  if installed (still overridden by phantomPath option)
 
-horseman
-  .userAgent(&#x27;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0&#x27;)
-  .open(&#x27;http://www.google.com&#x27;)
-  .type(&#x27;input[name=&#x22;q&#x22;]&#x27;, &#x27;github&#x27;)
-  .click(&#x27;[name=&#x22;btnK&#x22;]&#x27;)
-  .keyboardEvent(&#x27;keypress&#x27;, 16777221)
-  .<span class="apidocCodeKeywordSpan">waitForSelector</span>(&#x27;div.g&#x27;)
-  .count(&#x27;div.g&#x27;)
-  .log() // prints out the number of results
-  .close();
-```
+### Fixed
+- .open() now rejects on fail - thanks @w33ble.
+- .crop() now works with zoomFactor other than 1 - thanks @wong2.
+- .<span class="apidocCodeKeywordSpan">waitForSelector</span>() now uses JQuery for selectors (when avialable)
+- navigationRequested callback now called with correct parameters -
+  thanks @grahamkennery.
+- Tabs/pages not opened by Horseman (e.g. by a link)
+  are now correctly added to Horseman&#x27;s list of tabs
 
-Save the file as `google.js`. Then, `node google.js`.
+### Updated
+- bluebird dependency to 3.0.1
 ...</pre></li>
     </ul>
 
